@@ -2,18 +2,35 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 
+#include <linux/input-event-codes.h>
 #include <linux/keyboard.h>
+
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("liz <web@stillinbeta.com>");
+MODULE_DESCRIPTION("wreak havoc");
+MODULE_VERSION("0.0.1");
 
 static int ok_notifier_call(struct notifier_block *blk,
                             unsigned long code, void *_param);
 
 static struct notifier_block ok_notifier_block = {
   .notifier_call = ok_notifier_call,
+  .priority = 999,
 };
 
 static int ok_notifier_call(struct notifier_block *blk,
                             unsigned long code, void *_param) {
   struct keyboard_notifier_param *param = _param;
+
+  switch (param->value) {
+    case KEY_A :
+      param->value = KEY_Z;
+      break;
+    case KEY_Z :
+      param->value = KEY_A;
+      break;
+  };
 
   printk(KERN_INFO "Got block: down is %d, shift is %d, value is %u",
          param->down, param->shift, param->value);
@@ -21,10 +38,6 @@ static int ok_notifier_call(struct notifier_block *blk,
   return NOTIFY_OK;
 }
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("liz <web@stillinbeta.com>");
-MODULE_DESCRIPTION("wreak havoc");
-MODULE_VERSION("0.0.1");
 
 static int __init offkey_init(void) {
   int err;
